@@ -1,7 +1,6 @@
-import {Sidebar} from "flowbite-react";
-import {getCommandCategories, getCommands} from "../../actions";
+import {Sidebar, Tooltip} from "flowbite-react";
+import {getCommandCategories, getCommandsByCategory} from "../../actions";
 import {useEffect, useState} from "react";
-
 
 function LeftSidebar({setActiveCommand}) {
     const [sidebarCategories, setSidebarCategories] = useState({});
@@ -9,13 +8,15 @@ function LeftSidebar({setActiveCommand}) {
         try {
             const {documents} = await getCommandCategories();
             documents.map((categories) => {
-                getCommands(categories.$id).then((commands) => {
-                    setSidebarCategories((prevValues) => {
-                        return {
-                            ...prevValues,
-                            [categories.category]: commands.documents,
-                        };
-                    });
+                getCommandsByCategory(categories.$id).then((commands) => {
+                    if (commands){
+                        setSidebarCategories((prevValues) => {
+                            return {
+                                ...prevValues,
+                                [categories.category]: commands.documents,
+                            };
+                        });
+                    }
                 })
             })
 
@@ -36,7 +37,9 @@ function LeftSidebar({setActiveCommand}) {
                     {Object.keys(sidebarCategories).map((value, key) => (
                         <Sidebar.Collapse key={value} label={value}>
                             {sidebarCategories[value].length ? sidebarCategories[value].map((command) => (
-                                <Sidebar.Item onClick={() => setActiveCommand(command)} href="#">{command.title}</Sidebar.Item>
+                                <Tooltip content={command.description}>
+                                    <Sidebar.Item  className={"w-56"}  onClick={() => setActiveCommand(command)} href="#">{command.title}</Sidebar.Item>
+                                </Tooltip>
                             )) : "No command added"}
                         </Sidebar.Collapse>
                     ))}
